@@ -17,11 +17,11 @@ def get_food(db: Session, food_id: int):
         print(repr(error))
 
 
-def create_food(db: Session, food: schemas.FoodCreate):
+def create_food(db: Session, food: schemas.FoodCreate, index_id: int):
     
     try:
             
-        db_food = models.Food(index_id=food.index_id, image=food.image, recipe=food.recipe)
+        db_food = models.Food(index_id=index_id, image=food.image, recipe=food.recipe)
         db.add(db_food)
         db.commit()
         db.refresh(db_food)
