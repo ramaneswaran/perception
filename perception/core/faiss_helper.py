@@ -1,49 +1,51 @@
 import os 
 import numpy as np 
 import faiss
+from datetime import datetime
 
-class FaissCore():
+
+
+class FaissCore:
     """
     Contains utility function to handle faiss index
     """
 
-    def __init__(self, index_type="IndexFlatL2", dimension):
+    def __init__(self,name: str, store: str, dimension: int, index_type: str ="IndexFlatL2"):
         """
         Constructor for Faiss_core
         """
 
         try:
+
+            self.index_path = os.path.join(store, name)
+
             
+            self.index = faiss.read_index(self.index_path) if os.path.exists(self.index_path) else faiss.IndexFlatL2(dimension) 
 
-            if dimension is None:
-                raise Exception("Please specify dimension of vectors to be added in index")
-
-            self.dimension = dimension 
-
-            if index_type == "IndexFlatL2":
-
-                self.index = faiss.IndexFlatL2(dimension)
 
         except Exception as error:
             print(repr(error))
     
-    def insert_record(self, vectors):
+    def insert(self, vector):
         """
         Inserts a single vector to the index
         args:  
-            vectors(np.array): The np.array to be inserted
+            vector (np.array): The np.array to be inserted
         returns:
             None
         """
 
         try:
-
-            if vector.shape[1] != self.dimension:
-                raise Exception(f'The vector dim should be {self.dimension}, found vector of dimension {vector.shape[1]}')
-        
-            # Need to update database
-
+             
+            vector = vector.reshape(1,-1).astype('float32')
             self.index.add(vector)
+
+            index_id = self.index.ntotal
+
+            self.save()
+
+            return index_id
+
         
         except Exception as error:
             print(repr(error))
@@ -59,49 +61,33 @@ class FaissCore():
         """
 
         try:
-            distances, indexes = self.index.search(query, k)
+            query = query.reshape(1,-1).astype('float32')
+            _, indexes = self.index.search(query, 4)
 
             return indexes
 
         except Exception as error:
             print(repr(error))
-            
          
             
 
-    def save_index(self, fname):
+    def save(self):
         """
         Saves index with name fname
         The index is stored in index_store
         Args:
-            fname (string): Name with which index will be saved
+            None
         Returns:
             None
         """
 
         try:
-            index_store_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'index_store')
-            index_path = os.path.join(index_store_path, fname)
-
-            self.index.write_disk(self.index, fname)
+            faiss.write_index(self.index, self.index_path)
+            
 
         except Exception as error:
-            print(repr(error))
-
-    def load_saved_index(self, fname):
-        """
-        Reads a saved index
-        The index is usually store in index_store
-        Args:
-            fname(string): Name of saved index file
-        Returns:
-            None
-        """
-        try:
-            index_store_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'index_store')
-            index_path = os.path.join(index_store_path, fname)
-
-            self.index = faiss.read_index(fname)
-
-        except Exception as error:
-            print(repr(error))
+            print(error)
+    
+    @property
+    def size(self):
+        return self.index.ntotal
