@@ -128,3 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 sql_app.db
+
+# experiments
+/experiments
+
+# index store
+/perception/index_store
