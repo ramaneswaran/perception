@@ -1,4 +1,5 @@
 import os
+import yaml
 from typing import List
 
 import numpy as np
@@ -18,19 +19,24 @@ from perception.core.faiss_helper import FaissCore
 
 models.Base.metadata.create_all(bind=engine)
 
-
+stream = open("config.yaml", 'r')
+config = yaml.safe_load(stream)
 
 class Settings(BaseSettings):
     app_name: str = "Perception"
     base_dir: str = os.path.dirname(os.path.realpath(__file__))
-    index_store_path: str = os.path.join(base_dir, "index_store")
-    index_name: str = "vector.index"
 
+    index_store_path: str = os.path.join(base_dir, "index_store")
+    index_name: str = config["index_name"]
+    dimension: int = config['dimension']
+
+    image_dir = os.path.join(base_dir, 'data_store/images')
+    recipe_dir = os.path.join(base_dir, 'data_store/recipes')
 
 settings = Settings()
 
 app = FastAPI()
-index = FaissCore(name=settings.index_name, store=settings.index_store_path, dimension=6)
+index = FaissCore(name=settings.index_name, store=settings.index_store_path, dimension=settings.dimension)
 
 # Dependency
 def get_db():
@@ -42,24 +48,27 @@ def get_db():
 
 
 @app.post("/food/insert", response_model=schemas.Food)
-def create_food(food: schemas.FoodCreate, index_file: str = Body(...), dimension: int = Body(...), db: Session = Depends(get_db)):
+def create_food(food: schemas.FoodCreate, db: Session = Depends(get_db)):
     
 
     vector = np.array(food.embedding)
 
     index_id = index.insert(vector)
 
+    if crud.check_file_id(db=db, file_id=food.file_id):
+        raise HTTPException(status_code = 409, detail=  "This file ID already exists")
+
     return crud.create_food(db=db, food=food, index_id=index_id)
 
 
 @app.post("/food/search",response_model=schemas.SearchResult)
-def search_food(query: List[float] = Body(...), index_file: str = Body(...), dimension: int = Body(...), db: Session = Depends(get_db)):
+def search_food(query: schemas.SearchQuery,  db: Session = Depends(get_db)):
     
-    vector = np.array(query)
-
+    vector = np.array(query.value)
 
     index_ids = index.search(vector,4)
 
     result = schemas.SearchResult(index_ids=index_ids[0].tolist())
 
     return result
+
