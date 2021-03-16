@@ -58,7 +58,7 @@ def create_food(food: schemas.FoodCreate, db: Session = Depends(get_db)):
     if crud.check_file_id(db=db, file_id=food.file_id):
         raise HTTPException(status_code = 409, detail=  "This file ID already exists")
 
-    return crud.create_food(db=db, food=food, index_id=index_id)
+    return crud.create_food(db=db, food=food, index_id=index_id-1)
 
 
 @app.post("/food/search",response_model=schemas.SearchResult)
@@ -67,8 +67,16 @@ def search_food(query: schemas.SearchQuery,  db: Session = Depends(get_db)):
     vector = np.array(query.value)
 
     index_ids = index.search(vector,4)
+    food_items = []
+    for index_id in index_ids[0]:
+        
+        if index_id != -1:
+            item = crud.get_food_by_index_id(db,index_id)
+            if item is not None:
+                f.write(f'{item.index_id}\n')
+                food_items.append(schemas.Food.from_orm(item))
 
-    result = schemas.SearchResult(index_ids=index_ids[0].tolist())
+    result = schemas.SearchResult(result=food_items, index_ids=index_ids[0].tolist())
 
     return result
 

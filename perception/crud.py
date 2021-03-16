@@ -9,21 +9,17 @@ def check_file_id(db: Session, file_id: int):
 
     try:
 
-        result = db.query(models.Food).filter(models.Food.file_id == file_id).first()
-
-        if result is None:
-            return False 
+        result = db.query(models.Food).filter(models.Food.file_id == file_id).first() 
         
-        return True 
+        return result
     
     except Exception as error:
         print(repr(error))
 
-def get_food(db: Session, food_id: int):
+def get_food_by_index_id(db: Session, index_id: int):
 
     try:
-
-        return db.query(models.Food).filter(models.Food.id == food_id).first()
+        return db.query(models.Food).filter(models.Food.index_id == int(index_id)).first()
 
     except Exception as error:
         print(repr(error))

@@ -12,15 +12,17 @@ class FoodCreate(FoodBase):
 
 class Food(FoodBase):
     id: int
-
+    index_id: int
+    name: str 
+    file_id: str
     
 
     class Config:
         orm_mode = True
 
 class SearchResult(BaseModel):
+    result: List[Food]
     index_ids: List[int]
 
 class SearchQuery(BaseModel):
     value: List[float]
-    
