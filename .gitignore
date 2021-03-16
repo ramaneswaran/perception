@@ -132,5 +132,7 @@ sql_app.db
 # experiments
 /experiments
 
-# index store
+# Index and data stores
 /perception/index_store
+/perception/data_store/images
+/perception/data_store/recipes
