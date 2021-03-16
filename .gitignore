@@ -131,6 +131,7 @@ sql_app.db
 
 # experiments
 /experiments
+/perception/manage.py
 
 # Index and data stores
 /perception/index_store
