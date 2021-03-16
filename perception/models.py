@@ -13,6 +13,5 @@ class Food(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     index_id = Column(Integer, index=True)
-    image = Column(String)    
-    recipe = Column(String)
-    
+    file_id = Column(String, unique=True)
+    name = Column(String)

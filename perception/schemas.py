@@ -6,12 +6,13 @@ class FoodBase(BaseModel):
     pass
 
 class FoodCreate(FoodBase):
-    image: str 
-    recipe: str
+    name: str
+    file_id: str
     embedding: List[float]
 
 class Food(FoodBase):
     id: int
+
     
 
     class Config:
@@ -19,4 +20,7 @@ class Food(FoodBase):
 
 class SearchResult(BaseModel):
     index_ids: List[int]
+
+class SearchQuery(BaseModel):
+    value: List[float]
     
