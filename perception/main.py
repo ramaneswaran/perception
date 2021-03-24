@@ -8,8 +8,12 @@ import io
 import numpy as np
 import shutil
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi import File, Body, Response, File, UploadFile
+
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from pydantic import BaseSettings
 
@@ -42,6 +46,10 @@ class Settings(BaseSettings):
 settings = Settings()
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
+
 index = FaissCore(name=settings.index_name, store=settings.index_store_path, dimension=settings.dimension)
 encoder = VGGEncoder()
 
@@ -119,3 +127,7 @@ async def search_with_image(image: UploadFile = File(...), db: Session = Depends
     result = schemas.SearchResult(result=food_items, index_ids=index_ids[0].tolist())
 
     return result
+
+@app.get("/search/", response_class=HTMLResponse)
+async def search_view(request: Request):
+    return templates.TemplateResponse("search_view.html", {"request": request})
