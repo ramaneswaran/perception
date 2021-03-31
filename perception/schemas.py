@@ -8,6 +8,7 @@ class FoodBase(BaseModel):
 class FoodCreate(FoodBase):
     name: str
     file_id: str
+    image_url: str 
     embedding: List[float]
 
 class Food(FoodBase):
@@ -15,6 +16,7 @@ class Food(FoodBase):
     index_id: int
     name: str 
     file_id: str
+    image_url: str
     
 
     class Config:

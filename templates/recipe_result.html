@@ -11,11 +11,11 @@
     <title>Hello, world!</title>
   </head>
   <body>
-    <form action="/food/image" enctype="multipart/form-data" method="post">
-      <input name="image" type="file">
-      <input type="submit">
-      </form>
-
+    <h1 class='display-1'>Result</h1>
+    <h1 class='display-4'>{{food_items[0]['name']}}</h1>
+    <h1 class='display-4'>{{food_items[1]['name']}}</h1>
+    <h1 class='display-4'>{{food_items[2]['name']}}</h1>
+    <h1 class='display-4'>{{food_items[3]['name']}}</h1>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

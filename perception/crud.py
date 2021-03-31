@@ -29,7 +29,7 @@ def create_food(db: Session, food: schemas.FoodCreate, index_id: int):
     
     try:
             
-        db_food = models.Food(index_id=index_id, file_id=food.file_id, name=food.name)
+        db_food = models.Food(index_id=index_id, file_id=food.file_id, name=food.name, image_url=food.image_url)
         db.add(db_food)
         db.commit()
         db.refresh(db_food)

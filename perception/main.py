@@ -1,4 +1,5 @@
 import os
+import json
 import yaml
 from typing import List
 
@@ -62,6 +63,20 @@ def get_db():
         db.close()
 
 
+def read_metadata(file_id: str):
+    """
+    Reads metadata file
+    """
+
+    meta_store = './perception/data_store/recipes'
+    file_name = f"meta{file_id.zfill(5)}.json"
+    file_path = os.path.join(meta_store, file_name)
+
+    with open(file_path) as f:
+        data = json.load(f)
+    
+    return data 
+
 @app.post("/food/insert", response_model=schemas.Food)
 def create_food(food: schemas.FoodCreate, db: Session = Depends(get_db)):
     
@@ -76,36 +91,27 @@ def create_food(food: schemas.FoodCreate, db: Session = Depends(get_db)):
     return crud.create_food(db=db, food=food, index_id=index_id-1)
 
 
-@app.post("/food/search",response_model=schemas.SearchResult)
-def search_food(query: schemas.SearchQuery,  db: Session = Depends(get_db)):
+# @app.post("/food/search",response_model=schemas.SearchResult)
+# def search_food(query: schemas.SearchQuery,  db: Session = Depends(get_db)):
     
-    vector = np.array(query.value)
+#     vector = np.array(query.value)
 
-    index_ids = index.search(vector,4)
-    food_items = []
-    for index_id in index_ids[0]:
+#     index_ids = index.search(vector,4)
+#     food_items = []
+#     for index_id in index_ids[0]:
         
-        if index_id != -1:
-            item = crud.get_food_by_index_id(db,index_id)
-            if item is not None:
+#         if index_id != -1:
+#             item = crud.get_food_by_index_id(db,index_id)
+#             if item is not None:
               
-                food_items.append(schemas.Food.from_orm(item))
+#                 food_items.append(schemas.Food.from_orm(item))
 
-    result = schemas.SearchResult(result=food_items, index_ids=index_ids[0].tolist())
+#     result = schemas.SearchResult(result=food_items, index_ids=index_ids[0].tolist())
 
-    return result
+#     return result
 
-@app.post("/food/image", response_model=schemas.SearchResult)
-async def search_with_image(image: UploadFile = File(...), db: Session = Depends(get_db)):
-    # data = await image.read()
-    # byte_data = io.BytesIO(data)
-    # image = Image.open(io.BytesIO(data))
-
-    # f = open("log.txt", mode="w")
-    # f.write(str(type(data))+"\n")
-    # f.write(str(type(image.file))+"\n")
-    # f.write(str(type(byte_data)))
-    # f.close()
+@app.post("/food/search/result", response_class=HTMLResponse)
+async def search_with_image(request: Request, image: UploadFile = File(...), db: Session = Depends(get_db) ):
 
     with open("out.png", "wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
@@ -124,10 +130,14 @@ async def search_with_image(image: UploadFile = File(...), db: Session = Depends
               
                 food_items.append(schemas.Food.from_orm(item))
 
-    result = schemas.SearchResult(result=food_items, index_ids=index_ids[0].tolist())
+    return templates.TemplateResponse("search_result.html", {"request": request, "food_items": food_items})
 
-    return result
-
-@app.get("/search/", response_class=HTMLResponse)
+@app.get("/food/search/upload", response_class=HTMLResponse)
 async def search_view(request: Request):
-    return templates.TemplateResponse("search_view.html", {"request": request})
+    return templates.TemplateResponse("search_upload.html", {"request": request})
+
+
+@app.get('/food/{food_id}/recipe')
+async def recipe_view(food_id: str, request: Request):
+    data = read_metadata(food_id)
+    return data 

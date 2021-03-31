@@ -15,3 +15,4 @@ class Food(Base):
     index_id = Column(Integer, index=True)
     file_id = Column(String, unique=True)
     name = Column(String)
+    image_url = Column(String)
