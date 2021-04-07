@@ -110,6 +110,15 @@ def create_food(food: schemas.FoodCreate, db: Session = Depends(get_db)):
 
 #     return result
 
+
+@app.get("/",  response_class=HTMLResponse)
+async  def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/result",  response_class=HTMLResponse)
+async  def result(request: Request):
+    return templates.TemplateResponse("result.html", {"request": request})
+
 @app.post("/food/search/result", response_class=HTMLResponse)
 async def search_with_image(request: Request, image: UploadFile = File(...), db: Session = Depends(get_db) ):
 
@@ -130,14 +139,14 @@ async def search_with_image(request: Request, image: UploadFile = File(...), db:
               
                 food_items.append(schemas.Food.from_orm(item))
 
-    return templates.TemplateResponse("search_result.html", {"request": request, "food_items": food_items})
+    return templates.TemplateResponse("result.html", {"request": request, "food_items": food_items})
 
 @app.get("/food/search/upload", response_class=HTMLResponse)
 async def search_view(request: Request):
-    return templates.TemplateResponse("search_upload.html", {"request": request})
+    return templates.TemplateResponse("upload.html", {"request": request})
 
 
-@app.get('/food/{food_id}/recipe')
+@app.get('/food/{food_id}/recipe', response_class=HTMLResponse)
 async def recipe_view(food_id: str, request: Request):
     data = read_metadata(food_id)
-    return data 
+    return templates.TemplateResponse("recipe.html", {"request": request, "data":data})
